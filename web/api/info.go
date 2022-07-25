@@ -2,8 +2,8 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/zgwit/spider/args"
-	"github.com/zgwit/spider/config"
+	"github.com/zgwit/spider/internal/args"
+	"github.com/zgwit/spider/internal/config"
 	"runtime"
 )
 

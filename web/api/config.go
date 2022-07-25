@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/zgwit/spider/config"
+	"github.com/zgwit/spider/internal/config"
 )
 
 func loadConfig(ctx *gin.Context) {

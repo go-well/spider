@@ -2,7 +2,7 @@ package log
 
 import (
 	"github.com/sirupsen/logrus"
-	"github.com/zgwit/spider/config"
+	"github.com/zgwit/spider/internal/config"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"os"
 )

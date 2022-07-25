@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/kardianos/service"
-	"github.com/zgwit/spider/args"
-	"github.com/zgwit/spider/config"
-	"github.com/zgwit/spider/db"
-	"github.com/zgwit/spider/log"
+	"github.com/zgwit/spider/internal/args"
+	"github.com/zgwit/spider/internal/config"
+	"github.com/zgwit/spider/internal/db"
+	"github.com/zgwit/spider/internal/log"
 	"github.com/zgwit/spider/web"
 	"os"
 	"os/signal"

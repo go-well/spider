@@ -3,8 +3,8 @@ package api
 import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/zgwit/spider/config"
-	"github.com/zgwit/spider/model"
+	"github.com/zgwit/spider/internal/config"
+	"github.com/zgwit/spider/internal/model"
 	"net/http"
 )
 

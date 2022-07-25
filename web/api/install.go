@@ -2,8 +2,8 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/zgwit/spider/config"
-	"github.com/zgwit/spider/db"
+	"github.com/zgwit/spider/internal/config"
+	"github.com/zgwit/spider/internal/db"
 )
 
 type installBaseObj struct {

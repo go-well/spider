@@ -2,8 +2,8 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/zgwit/spider/db"
-	"github.com/zgwit/spider/log"
+	"github.com/zgwit/spider/internal/db"
+	"github.com/zgwit/spider/internal/log"
 	"reflect"
 )
 

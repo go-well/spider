@@ -2,8 +2,8 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/zgwit/spider/db"
-	"github.com/zgwit/spider/model"
+	"github.com/zgwit/spider/internal/db"
+	"github.com/zgwit/spider/internal/model"
 )
 
 func userMe(ctx *gin.Context) {
