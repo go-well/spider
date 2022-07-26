@@ -21,12 +21,14 @@ const (
 )
 
 const (
-	TunnelCreate       Type = iota + 20 //net,addr 例 tcp,127.0.0.1:8080
-	TunnelCreateAck                     //id(uint16)
-	TunnelClose                         //id
-	TunnelCloseAck                      //id
-	TunnelTransferData                  //id,data
-	//TunnelTransferEnd
+	TunnelCreate    Type = iota + 20 //net,addr 例 tcp,127.0.0.1:8080
+	TunnelCreateAck                  //id(uint16)
+	TunnelClose                      //id
+	TunnelCloseAck                   //id
+	TunnelData                       //id,data
+	TunnelDataAck                    //id
+	TunnelEnd                        //id
+	TunnelError                      //id,error
 
 )
 
