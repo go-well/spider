@@ -28,6 +28,11 @@ func uVarIntSize(x uint64) {
 	binary.PutUvarint(nil, x)
 }
 
+func (p *Package) SetError(err string) {
+	p.Fail = true
+	p.Data = []byte(err)
+}
+
 func (p *Package) Encode() []byte {
 	buf := make([]byte, 12+len(p.Data))
 	copy(buf, MAGIC)
@@ -42,7 +47,6 @@ func (p *Package) Encode() []byte {
 }
 
 func (p *Package) Decode(buf []byte) (uint64, error) {
-
 	//寻找魔术头
 	var cursor uint64 = 0
 	for bytes.Compare([]byte(MAGIC), buf) != 0 {

@@ -3,94 +3,81 @@ package spy
 import (
 	"github.com/zgwit/spider/silk"
 	"net"
-	"os"
-	"strings"
 )
 
-func Open() {
+type Handler func(c *Client, p *silk.Package)
+type Handlers []Handler
+
+var handlers = map[silk.Type]Handlers{}
+
+func RegisterHandler(tp silk.Type, handler Handler) {
+	hs, ok := handlers[tp]
+	if !ok {
+		hs = Handlers{handler}
+		handlers[tp] = hs
+	} else {
+		handlers[tp] = append(hs, handler)
+	}
+}
+
+func ReplaceHandler(tp silk.Type, handler Handler) {
+	handlers[tp] = Handlers{handler}
+}
+
+type Client struct {
+	conn   net.Conn
+	parser silk.Parser
+	//处理队列
+	packages chan *silk.Package
+}
+
+func (c *Client) handle(p *silk.Package) {
+	if hs, ok := handlers[p.Type]; ok {
+		for _, h := range hs {
+			h(c, p)
+		}
+	}
+}
+
+func (c *Client) run() {
+	for {
+		var buf = make([]byte, 1024)
+
+		n, err := c.conn.Read(buf)
+		if err != nil {
+			break
+		}
+
+		packs, err := c.parser.Parse(buf[:n])
+		for _, p := range packs {
+			c.handle(p)
+		}
+		if err != nil {
+			//print
+		}
+	}
+}
+
+func (c *Client) Send(p *silk.Package) error {
+	buf := p.Encode()
+	_, err := c.conn.Write(buf)
+	return err
+}
+
+func newClient(conn net.Conn) *Client {
+	cli := &Client{
+		conn:     conn,
+		packages: make(chan *silk.Package, 64), //TODO 需要从配置调整
+	}
+	go cli.run()
+	return cli
+}
+
+func Open() (*Client, error) {
 	conn, err := net.Dial("tcp", "127.0.0.1:1206")
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	parser := silk.NewParser(conn, func(p *silk.Package) {
-		if p.Type >= 0x80 {
-			//string(p.Data)
-			return
-		}
-		switch p.Type {
-		case silk.Close:
-			_ = conn.Close()
-		case silk.Heartbeat:
-		case silk.ConnectAck:
-		case silk.SubscribeAck:
-		case silk.UnsubscribeAck:
-		case silk.PublishAck:
-		case silk.Message: //topic, message
-			str := string(p.Data)
-			index := strings.Index(str, ",")
-			if index > -1 {
-				topic := str[:index]
-				message := str[index+1:]
-			} else {
-				topic := str
-			}
-
-		case silk.TunnelCreate: //net,addr 例 tcp,127.0.0.1:8080
-			str := strings.Split(string(p.Data), ",")
-			conn, err := net.Dial(str[0], str[1])
-
-		case silk.TunnelCreateAck: //id(uint16)
-		case silk.TunnelClose: //id
-		case silk.TunnelCloseAck: //id
-		case silk.TunnelTransferData: //id,data
-		//TunnelTransferEnd
-
-		case silk.SystemShell: // /bin/sh
-
-		case silk.SystemShellAck: //tunnel id(uint16)
-		case silk.SystemExecute: //command string
-		case silk.SystemExecuteAck: //stdout
-		case silk.SystemConfig:
-		case silk.SystemConfigAck: //yaml
-		case silk.SystemDbQuery: //sql
-		case silk.SystemDbQueryAck: //json
-		case silk.SystemDbExec: //sql
-		case silk.SystemDbExecAck: //text
-
-		case silk.StatsHost:
-		case silk.StatsHostAck: //json
-		case silk.StatsCpu:
-		case silk.StatsCpuAck: //json
-		case silk.StatsMem:
-		case silk.StatsMemAck: //json
-		case silk.StatsDisk:
-		case silk.StatsDiskAck: //json
-		case silk.StatsNet:
-		case silk.StatsNetAck: //json
-		case silk.StatsUser:
-		case silk.StatsUserAck: //json
-
-		case silk.FsList: //path
-		case silk.FsListAck: //json
-		case silk.FsMkDir: //path
-		case silk.FsMkDirAck: //
-		case silk.FsRemove: //path
-		case silk.FsRemoveAck: //
-		case silk.FsRename: //path,path
-			str := strings.Split(string(p.Data), ",")
-			_ = os.Rename(str[0], str[1])
-		case silk.FsRenameAck: //
-		case silk.FsStats: //path
-		case silk.FsStatsOk: //json
-		case silk.FsDownload: //path
-		case silk.FsDownloadAck: //id
-		case silk.FsUpload: //path
-		case silk.FsUploadAck: //id
-		case silk.FsTransferData: //id,data
-		case silk.FsTransferEnd: //id
-
-		}
-	})
-
+	return newClient(conn), nil
 }

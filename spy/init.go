@@ -1,5 +1,0 @@
-package spy
-
-func init() {
-
-}

@@ -57,32 +57,36 @@ const (
 )
 
 const (
-	FsList         Type = iota + 64 //path
-	FsListAck                       //json
-	FsMkDir                         //path
-	FsMkDirAck                      //
-	FsRemove                        //path
-	FsRemoveAck                     //
-	FsRename                        //path,path
-	FsRenameAck                     //
-	FsStats                         //path
-	FsStatsOk                       //json
-	FsDownload                      //path
-	FsDownloadAck                   //id
-	FsUpload                        //path
-	FsUploadAck                     //id
-	FsTransferData                  //id,data
-	FsTransferEnd                   //id
+	FsList      Type = iota + 64 //path
+	FsListAck                    //json
+	FsMkDir                      //path
+	FsMkDirAck                   //
+	FsRemove                     //path
+	FsRemoveAck                  //
+	FsRename                     //path,path
+	FsRenameAck                  //
+	FsStats                      //path
+	FsStatsAck                   //json
+
+	FsDownload           //path
+	FsDownloadContent    //id,data
+	FsDownloadContentAck //id
+	FsDownloadEnd        //id
+
+	FsUpload           //path
+	FsUploadAck        //id
+	FsUploadContent    //id,data
+	FsUploadContentAck //id
+	FsUploadEnd        //id
+	FsUploadEndAck     //id
+
 )
 
 const (
-	Ft Type = iota + 80
+	ex2 Type = iota + 96
 )
 const (
-	Ft2 Type = iota + 96
-)
-const (
-	Ft3 Type = iota + 112
+	ex3 Type = iota + 112
 )
 
 func no() {

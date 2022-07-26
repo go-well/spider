@@ -1,1 +1,5 @@
 package spy
+
+func init() {
+
+}
