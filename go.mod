@@ -1,4 +1,4 @@
-module github.com/zgwit/spider
+module github.com/go-well/spider
 
 go 1.18
 

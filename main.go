@@ -1,12 +1,12 @@
 package main
 
 import (
+	"github.com/go-well/spider/internal/args"
+	"github.com/go-well/spider/internal/config"
+	"github.com/go-well/spider/internal/db"
+	"github.com/go-well/spider/internal/log"
+	"github.com/go-well/spider/web"
 	"github.com/kardianos/service"
-	"github.com/zgwit/spider/internal/args"
-	"github.com/zgwit/spider/internal/config"
-	"github.com/zgwit/spider/internal/db"
-	"github.com/zgwit/spider/internal/log"
-	"github.com/zgwit/spider/web"
 	"os"
 	"os/signal"
 	"syscall"

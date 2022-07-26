@@ -3,7 +3,7 @@ package spy
 import (
 	"encoding/binary"
 	"encoding/json"
-	"github.com/zgwit/spider/silk"
+	"github.com/go-well/spider/silk"
 	"io"
 	"os"
 	"strings"

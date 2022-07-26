@@ -1,8 +1,8 @@
 package log
 
 import (
+	"github.com/go-well/spider/internal/config"
 	"github.com/sirupsen/logrus"
-	"github.com/zgwit/spider/internal/config"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"os"
 )

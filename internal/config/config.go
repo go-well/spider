@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/zgwit/spider/internal/args"
+	"github.com/go-well/spider/internal/args"
 	"gopkg.in/yaml.v3"
 	"log"
 	"os"

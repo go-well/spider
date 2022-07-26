@@ -1,7 +1,7 @@
 package silk
 
 import (
-	"github.com/zgwit/spider/lib"
+	"github.com/go-well/spider/lib"
 )
 
 type OnPackage func(p *Package)

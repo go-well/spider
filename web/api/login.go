@@ -5,9 +5,9 @@ import (
 	"encoding/hex"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/zgwit/spider/internal/config"
-	"github.com/zgwit/spider/internal/db"
-	"github.com/zgwit/spider/internal/model"
+	"github.com/go-well/spider/internal/config"
+	"github.com/go-well/spider/internal/db"
+	"github.com/go-well/spider/internal/model"
 )
 
 type loginObj struct {

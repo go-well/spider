@@ -1,8 +1,8 @@
 package db
 
 import (
-	"github.com/zgwit/spider/internal/config"
-	"github.com/zgwit/spider/internal/model"
+	"github.com/go-well/spider/internal/config"
+	"github.com/go-well/spider/internal/model"
 	"xorm.io/xorm"
 	"xorm.io/xorm/log"
 

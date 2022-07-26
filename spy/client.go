@@ -1,7 +1,7 @@
 package spy
 
 import (
-	"github.com/zgwit/spider/silk"
+	"github.com/go-well/spider/silk"
 	"net"
 )
 
