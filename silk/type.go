@@ -18,7 +18,7 @@ const (
 )
 
 const (
-	TunnelCreate       Type = iota + 16 //net,addr 例 tcp,127.0.0.1:8080
+	TunnelCreate       Type = iota + 20 //net,addr 例 tcp,127.0.0.1:8080
 	TunnelCreateAck                     //id(uint16)
 	TunnelClose                         //id
 	TunnelCloseAck                      //id
@@ -28,10 +28,12 @@ const (
 )
 
 const (
-	SystemShell      Type = iota + 32 // /bin/sh
+	SystemShell      Type = iota + 40 // /bin/sh
 	SystemShellAck                    //tunnel id(uint16)
 	SystemExecute                     //command string
 	SystemExecuteAck                  //stdout
+	SystemKill
+	SystemKillAck
 	SystemConfig
 	SystemConfigAck  //yaml
 	SystemDbQuery    //sql
@@ -42,22 +44,28 @@ const (
 )
 
 const (
-	StatsHost    Type = iota + 48
+	StatsHost    Type = iota + 60
 	StatsHostAck      //json
 	StatsCpu
 	StatsCpuAck //json
+	StatsCpuTimes
+	StatsCpuTimesAck //json
 	StatsMem
 	StatsMemAck //json
 	StatsDisk
-	StatsDiskAck //json
+	StatsDiskAck      //json
+	StatsDiskUsage    //path
+	StatsDiskUsageAck //json
 	StatsNet
 	StatsNetAck //json
+	StatsConnection
+	StatsConnectionAck //json
 	StatsUser
 	StatsUserAck //json
 )
 
 const (
-	FsList      Type = iota + 64 //path
+	FsList      Type = iota + 80 //path
 	FsListAck                    //json
 	FsMkDir                      //path
 	FsMkDirAck                   //
@@ -83,10 +91,7 @@ const (
 )
 
 const (
-	ex2 Type = iota + 96
-)
-const (
-	ex3 Type = iota + 112
+	ext Type = iota + 100
 )
 
 func no() {

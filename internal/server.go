@@ -18,9 +18,6 @@ func Open() error {
 		}
 
 		//创建连接
-		//client := &Client{conn: conn}
-		//go client.receive()
+		_ = &Client{conn: conn}
 	}
-
-	return nil
 }
