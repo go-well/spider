@@ -28,7 +28,7 @@ var fileIndex uint16 = 1
 
 func init() {
 	RegisterHandler(silk.FsList, func(c *Client, p *silk.Package) {
-		p.Type++
+		p.Type = silk.FsListAck
 		path := string(p.Data)
 		dirs, err := os.ReadDir(path)
 		if err != nil {
@@ -45,7 +45,7 @@ func init() {
 	})
 
 	RegisterHandler(silk.FsMkDir, func(c *Client, p *silk.Package) {
-		p.Type++
+		p.Type = silk.FsMkDirAck
 		path := string(p.Data)
 		err := os.Mkdir(path, os.ModePerm)
 		if err != nil {
@@ -55,7 +55,7 @@ func init() {
 	})
 
 	RegisterHandler(silk.FsRemove, func(c *Client, p *silk.Package) {
-		p.Type++
+		p.Type = silk.FsRemoveAck
 		path := string(p.Data)
 		err := os.RemoveAll(path)
 		if err != nil {
@@ -65,7 +65,7 @@ func init() {
 	})
 
 	RegisterHandler(silk.FsRename, func(c *Client, p *silk.Package) {
-		p.Type++
+		p.Type = silk.FsRenameAck
 		path := string(p.Data)
 		str := strings.Split(path, ",")
 		if len(str) < 2 {
@@ -81,7 +81,7 @@ func init() {
 	})
 
 	RegisterHandler(silk.FsStats, func(c *Client, p *silk.Package) {
-		p.Type++
+		p.Type = silk.FsStatsAck
 		path := string(p.Data)
 		st, err := os.Stat(path)
 		if err != nil {
@@ -95,7 +95,7 @@ func init() {
 	})
 
 	RegisterHandler(silk.FsDownload, func(c *Client, p *silk.Package) {
-		p.Type++
+		p.Type = silk.FsDownloadContent
 		path := string(p.Data)
 		file, err := os.Open(path)
 		if err != nil {
@@ -127,9 +127,9 @@ func init() {
 		_ = c.Send(p)
 	})
 
-	//处理上传
+	//处理下载
 	RegisterHandler(silk.FsDownloadContentAck, func(c *Client, p *silk.Package) {
-		p.Type--
+		p.Type = silk.FsDownloadContent
 		id := binary.BigEndian.Uint16(p.Data)
 		f, ok := files.Load(id)
 		if !ok {
@@ -152,7 +152,7 @@ func init() {
 	})
 
 	RegisterHandler(silk.FsUpload, func(c *Client, p *silk.Package) {
-		p.Type++
+		p.Type = silk.FsUploadAck
 		path := string(p.Data)
 		file, err := os.OpenFile(path, os.O_CREATE, os.ModePerm)
 		if err != nil {
@@ -172,7 +172,7 @@ func init() {
 
 	//处理上传
 	RegisterHandler(silk.FsUploadContent, func(c *Client, p *silk.Package) {
-		p.Type++
+		p.Type = silk.FsUploadContentAck
 		id := binary.BigEndian.Uint16(p.Data)
 		f, ok := files.Load(id)
 		if !ok {
@@ -191,9 +191,9 @@ func init() {
 		_ = c.Send(p)
 	})
 
-	//处理下载响应
+	//处理上传响应
 	RegisterHandler(silk.FsUploadEnd, func(c *Client, p *silk.Package) {
-		p.Type++
+		p.Type = silk.FsUploadEndAck
 		id := binary.BigEndian.Uint16(p.Data)
 		f, ok := files.Load(id)
 		if !ok {

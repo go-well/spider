@@ -64,6 +64,16 @@ func (c *Client) Send(p *silk.Package) error {
 	return err
 }
 
+func (c *Client) Close() error {
+	//TODO 判断是否已经关闭
+	return c.conn.Close()
+}
+
+func (c *Client) Spawn() error {
+
+	return nil
+}
+
 func newClient(conn net.Conn) *Client {
 	cli := &Client{
 		conn:     conn,

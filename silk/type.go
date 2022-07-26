@@ -4,6 +4,8 @@ type Type uint8
 
 const (
 	Close Type = iota
+	Ping
+	Pong
 	Heartbeat
 	Connect //json{..info...}
 	ConnectAck
@@ -14,7 +16,8 @@ const (
 	Publish //topic, message
 	PublishAck
 	Message //topic, message
-
+	Spawn
+	SpawnAck
 )
 
 const (
@@ -30,16 +33,16 @@ const (
 const (
 	SystemShell      Type = iota + 40 // /bin/sh
 	SystemShellAck                    //tunnel id(uint16)
-	SystemExecute                     //command string
+	SystemExecute                     //command
 	SystemExecuteAck                  //stdout
+	SystemStart                       //command
+	SystemStartAck                    //stdout
 	SystemKill
 	SystemKillAck
+	SystemEnvironment
+	SystemEnvironmentAck //json
 	SystemConfig
-	SystemConfigAck  //yaml
-	SystemDbQuery    //sql
-	SystemDbQueryAck //json
-	SystemDbExec     //sql
-	SystemDbExecAck  //text
+	SystemConfigAck //yaml、json
 
 )
 
@@ -65,16 +68,30 @@ const (
 )
 
 const (
-	FsList      Type = iota + 80 //path
-	FsListAck                    //json
-	FsMkDir                      //path
-	FsMkDirAck                   //
-	FsRemove                     //path
-	FsRemoveAck                  //
-	FsRename                     //path,path
-	FsRenameAck                  //
-	FsStats                      //path
-	FsStatsAck                   //json
+	DatabaseQuery     Type = iota + 80 //sql
+	DatabaseQueryAck                   //json
+	DatabaseExec                       //sql
+	DatabaseExecAck                    //json
+	DatabaseMeta                       //
+	DatabaseMetaAck                    //json
+	DatabaseDriver                     //
+	DatabaseDriverAck                  //text
+	DatabaseSource                     //
+	DatabaseSourceAck                  //text
+
+)
+
+const (
+	FsList      Type = iota + 100 //path
+	FsListAck                     //json
+	FsMkDir                       //path
+	FsMkDirAck                    //
+	FsRemove                      //path
+	FsRemoveAck                   //
+	FsRename                      //path,path
+	FsRenameAck                   //
+	FsStats                       //path
+	FsStatsAck                    //json
 
 	FsDownload           //path
 	FsDownloadContent    //id,data
@@ -88,10 +105,6 @@ const (
 	FsUploadEnd        //id
 	FsUploadEndAck     //id
 
-)
-
-const (
-	ext Type = iota + 100
 )
 
 func no() {
