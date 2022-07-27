@@ -21,14 +21,15 @@ const (
 )
 
 const (
-	TunnelCreate    Type = iota + 20 //net,addr 例 tcp,127.0.0.1:8080
-	TunnelCreateAck                  //id(uint16)
-	TunnelClose                      //id
-	TunnelCloseAck                   //id
-	TunnelData                       //id,data
-	TunnelDataAck                    //id
-	TunnelEnd                        //id
-	TunnelError                      //id,error
+	TunnelCreate     Type = iota + 20 //net,addr 例 tcp,127.0.0.1:8080
+	TunnelCreateAck                   //id(uint16)
+	TunnelClose                       //id
+	TunnelCloseAck                    //id
+	TunnelData                        //id,data
+	TunnelDataAck                     //id
+	TunnelDataEnd                     //id
+	TunnelDataEndAck                  //id
+	TunnelError                       //id,error
 
 )
 
@@ -36,7 +37,8 @@ const (
 	TaskCreate     Type = iota + 40 //command
 	TaskCreateAck                   //id(uint16)
 	TaskData                        //id,data
-	TaskEnd                         //id
+	TaskDataAck                     //id
+	TaskDataEnd                     //id
 	TaskKill                        //id
 	TaskKillAck                     //id
 	TaskExecute                     //commmand
@@ -80,6 +82,10 @@ const (
 	DatabaseDriverAck                  //text
 	DatabaseSource                     //
 	DatabaseSourceAck                  //text
+	DatabaseDump                       //
+	DatabaseDumpAck                    //filename
+	DatabaseImport                     //filename
+	DatabaseImportAck                  //
 
 )
 
@@ -95,18 +101,14 @@ const (
 	FsStats                       //path
 	FsStatsAck                    //json
 
-	FsDownload           //path
-	FsDownloadContent    //id,data
-	FsDownloadContentAck //id
-	FsDownloadEnd        //id
-
-	FsUpload           //path
-	FsUploadAck        //id
-	FsUploadContent    //id,data
-	FsUploadContentAck //id
-	FsUploadEnd        //id
-	FsUploadEndAck     //id
-
+	FsUpload      //path
+	FsUploadAck   //id
+	FsDownload    //path
+	FsDownloadAck //id
+	FsData        //id,data
+	FsDataAck     //id
+	FsDataEnd     //id
+	FsDataEndAck  //id
 )
 
 func no() {

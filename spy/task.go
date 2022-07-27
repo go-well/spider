@@ -3,7 +3,6 @@ package spy
 import (
 	"encoding/binary"
 	"github.com/go-well/spider/silk"
-	"os"
 	"os/exec"
 	"strings"
 )
@@ -15,12 +14,6 @@ func init() {
 
 		names := strings.Split(string(p.Data), " ")
 		cmd := exec.Command(names[0], names[1:]...)
-		err := cmd.Run()
-		if err != nil {
-			p.SetError(err.Error())
-			_ = c.Send(p)
-			return
-		}
 
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
@@ -35,8 +28,15 @@ func init() {
 			return
 		}
 
+		err = cmd.Run()
+		if err != nil {
+			p.SetError(err.Error())
+			_ = c.Send(p)
+			return
+		}
+
 		//缓存
-		id := c.newTask(stdin, stdout)
+		id := c.newTask(cmd, stdin)
 		buf := make([]byte, 512)
 		binary.BigEndian.PutUint16(buf, id)
 
@@ -55,11 +55,28 @@ func init() {
 				})
 			}
 			_ = c.Send(&silk.Package{
-				Type: silk.TaskEnd,
+				Type: silk.TaskDataEnd,
 				Data: buf[:2],
 			})
 		}()
+	})
 
+	RegisterHandler(silk.TaskData, func(c *Client, p *silk.Package) {
+		p.Type = silk.TaskDataAck
+		id := binary.BigEndian.Uint16(p.Data)
+		f, ok := c.files.LoadAndDelete(id)
+		if !ok {
+			p.SetError("task not exists")
+			_ = c.Send(p)
+			return
+		}
+
+		t := f.(*task)
+		_, err := t.stdin.Write(p.Data[2:])
+		if err != nil {
+			p.SetError(err.Error())
+		}
+		_ = c.Send(p)
 	})
 
 	RegisterHandler(silk.TaskExecute, func(c *Client, p *silk.Package) {
@@ -92,14 +109,16 @@ func init() {
 
 	RegisterHandler(silk.TaskKill, func(c *Client, p *silk.Package) {
 		p.Type = silk.TaskKillAck
-		id := binary.BigEndian.Uint64(p.Data)
-		pro, err := os.FindProcess(int(id))
-		if err != nil {
-			p.SetError(err.Error())
+		id := binary.BigEndian.Uint16(p.Data)
+		f, ok := c.files.LoadAndDelete(id)
+		if !ok {
+			p.SetError("task not exists")
 			_ = c.Send(p)
 			return
 		}
-		err = pro.Kill()
+
+		t := f.(*task)
+		err := t.cmd.Process.Kill()
 		if err != nil {
 			p.SetError(err.Error())
 		}

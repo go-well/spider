@@ -56,4 +56,26 @@ func RegisterXORM(engine *xorm.Engine) {
 		_ = c.Send(p)
 	})
 
+	RegisterHandler(silk.DatabaseDump, func(c *Client, p *silk.Package) {
+		p.Type = silk.DatabaseDumpAck
+		filename := string(p.Data)
+		err := engine.DumpAllToFile(filename)
+		if err != nil {
+			p.SetError(err.Error())
+		}
+		_ = c.Send(p)
+	})
+
+	RegisterHandler(silk.DatabaseImport, func(c *Client, p *silk.Package) {
+		p.Type = silk.DatabaseImportAck
+		filename := string(p.Data)
+		res, err := engine.ImportFile(filename)
+		if err != nil {
+			p.SetError(err.Error())
+		} else {
+			p.Data, _ = json.Marshal(res)
+		}
+		_ = c.Send(p)
+	})
+
 }

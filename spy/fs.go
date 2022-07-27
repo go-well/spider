@@ -91,7 +91,7 @@ func init() {
 	})
 
 	RegisterHandler(silk.FsDownload, func(c *Client, p *silk.Package) {
-		p.Type = silk.FsDownloadContent
+		p.Type = silk.FsDownloadAck
 		path := string(p.Data)
 		file, err := os.Open(path)
 		if err != nil {
@@ -101,45 +101,21 @@ func init() {
 		}
 
 		//缓存
-		p.Data = make([]byte, 512)
+		p.Data = make([]byte, 2)
 		id := c.newFile(file)
 		binary.BigEndian.PutUint16(p.Data, id)
+		_ = c.Send(p)
 
+		//主动发送第一个数据包
+		p.Data = make([]byte, 512)
+		binary.BigEndian.PutUint16(p.Data, id)
 		n, e := file.Read(p.Data[2:])
 		if e != nil {
 			if e == io.EOF {
-				p.Type = silk.FsDownloadEnd
+				p.Type = silk.FsDataEnd
 			} else {
 				p.SetError(e.Error())
 			}
-		} else {
-			if n < 510 {
-				p.Type = silk.FsDownloadEnd
-			}
-			p.Data = p.Data[:2+n]
-		}
-
-		_ = c.Send(p)
-	})
-
-	//处理下载
-	RegisterHandler(silk.FsDownloadContentAck, func(c *Client, p *silk.Package) {
-		p.Type = silk.FsDownloadContent
-		id := binary.BigEndian.Uint16(p.Data)
-		f, ok := c.files.Load(id)
-		if !ok {
-			p.SetError("file not exists")
-			_ = c.Send(p)
-			return
-		}
-
-		file := f.(*os.File)
-		buf := make([]byte, 512)
-		copy(buf, p.Data)
-		p.Data = buf
-		n, err := file.Read(p.Data[2:])
-		if err != nil {
-			p.SetError(err.Error())
 		} else {
 			p.Data = p.Data[:2+n]
 		}
@@ -165,8 +141,8 @@ func init() {
 	})
 
 	//处理上传
-	RegisterHandler(silk.FsUploadContent, func(c *Client, p *silk.Package) {
-		p.Type = silk.FsUploadContentAck
+	RegisterHandler(silk.FsData, func(c *Client, p *silk.Package) {
+		p.Type = silk.FsDataAck
 		id := binary.BigEndian.Uint16(p.Data)
 		f, ok := c.files.Load(id)
 		if !ok {
@@ -185,11 +161,38 @@ func init() {
 		_ = c.Send(p)
 	})
 
-	//处理上传响应
-	RegisterHandler(silk.FsUploadEnd, func(c *Client, p *silk.Package) {
-		p.Type = silk.FsUploadEndAck
+	//处理下载
+	RegisterHandler(silk.FsDataAck, func(c *Client, p *silk.Package) {
+		p.Type = silk.FsData
 		id := binary.BigEndian.Uint16(p.Data)
 		f, ok := c.files.Load(id)
+		if !ok {
+			p.SetError("file not exists")
+			_ = c.Send(p)
+			return
+		}
+
+		file := f.(*os.File)
+		p.Data = make([]byte, 512)
+		binary.BigEndian.PutUint16(p.Data, id)
+		n, err := file.Read(p.Data[2:])
+		if err != nil {
+			if err == io.EOF {
+				p.Type = silk.FsDataEnd
+			} else {
+				p.SetError(err.Error())
+			}
+		} else {
+			p.Data = p.Data[:2+n]
+		}
+		_ = c.Send(p)
+	})
+
+	//处理结束
+	RegisterHandler(silk.FsDataEnd, func(c *Client, p *silk.Package) {
+		p.Type = silk.FsDataEndAck
+		id := binary.BigEndian.Uint16(p.Data)
+		f, ok := c.files.LoadAndDelete(id)
 		if !ok {
 			p.SetError("file not exists")
 			_ = c.Send(p)

@@ -5,6 +5,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"os/exec"
 	"sync"
 )
 
@@ -28,8 +29,8 @@ func ReplaceHandler(tp silk.Type, handler Handler) {
 }
 
 type task struct {
-	stdin  io.WriteCloser
-	stdout io.ReadCloser
+	cmd   *exec.Cmd
+	stdin io.WriteCloser
 }
 
 type Client struct {
@@ -61,11 +62,11 @@ func (c *Client) newTunnel(conn net.Conn) uint16 {
 	return c.tunnelIndex
 }
 
-func (c *Client) newTask(stdin io.WriteCloser, stdout io.ReadCloser) uint16 {
+func (c *Client) newTask(cmd *exec.Cmd, stdin io.WriteCloser) uint16 {
 	c.taskIndex++
 	c.tasks.Store(c.taskIndex, &task{
-		stdin:  stdin,
-		stdout: stdout,
+		cmd:   cmd,
+		stdin: stdin,
 	})
 	return c.taskIndex
 }
@@ -105,6 +106,7 @@ func (c *Client) Send(p *silk.Package) error {
 
 func (c *Client) Close() error {
 	//TODO 判断是否已经关闭
+	//TODO 关闭文件，关闭通道，关闭task
 	return c.conn.Close()
 }
 

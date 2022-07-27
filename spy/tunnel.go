@@ -27,7 +27,7 @@ func receiveTunnel(c *Client, conn net.Conn, id uint16) {
 		_ = c.Send(pack)
 	}
 	_ = c.Send(&silk.Package{
-		Type: silk.TunnelEnd,
+		Type: silk.TunnelDataEnd,
 		Data: buf[:2],
 	})
 
@@ -91,17 +91,27 @@ func init() {
 		_, err := conn.Write(p.Data[2:])
 		if err != nil {
 			p.SetError(err.Error())
+			_ = c.Send(p)
 		}
-		_ = c.Send(p)
+		//正常不回复
 	})
 
-	RegisterHandler(silk.TunnelEnd, func(c *Client, p *silk.Package) {
+	RegisterHandler(silk.TunnelDataEnd, func(c *Client, p *silk.Package) {
+		p.Type = silk.TunnelDataEndAck
 		id := binary.BigEndian.Uint16(p.Data)
 		f, ok := c.tunnels.LoadAndDelete(id)
-		if ok {
-			conn := f.(net.Conn)
-			_ = conn.Close()
+		if !ok {
+			p.SetError("tunnel not exists")
+			_ = c.Send(p)
+			return
 		}
+		conn := f.(net.Conn)
+		err := conn.Close()
+		if err != nil {
+			p.SetError(err.Error())
+			_ = c.Send(p)
+		}
+		//正常不回复
 	})
 
 }
