@@ -32,6 +32,7 @@ func receiveTunnel(c *Client, conn net.Conn, id uint16) {
 	}
 	_ = c.Send(&silk.Package{
 		Type: silk.TunnelEnd,
+		Data: buf[:2],
 	})
 
 	tunnels.Delete(id)

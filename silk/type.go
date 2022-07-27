@@ -33,18 +33,16 @@ const (
 )
 
 const (
-	SystemShell      Type = iota + 40 // /bin/sh
-	SystemShellAck                    //tunnel id(uint16)
-	SystemExecute                     //command
-	SystemExecuteAck                  //stdout
-	SystemStart                       //command
-	SystemStartAck                    //stdout
-	SystemKill
-	SystemKillAck
-	SystemEnvironment
-	SystemEnvironmentAck //json
-	SystemConfig
-	SystemConfigAck //yaml、json
+	TaskCreate     Type = iota + 40 //command
+	TaskCreateAck                   //id(uint16)
+	TaskData                        //id,data
+	TaskEnd                         //id
+	TaskKill                        //id
+	TaskKillAck                     //id
+	TaskExecute                     //commmand
+	TaskExecuteAck                  //output
+	TaskRun                         //commmand
+	TaskRunAck                      //
 
 )
 
