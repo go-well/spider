@@ -51,18 +51,20 @@ const (
 	StatsHostAck      //json
 	StatsCpu
 	StatsCpuAck //json
-	StatsCpuTimes
-	StatsCpuTimesAck //json
+	StatsCpuUsage
+	StatsCpuUsageAck //json
 	StatsMem
 	StatsMemAck //json
 	StatsDisk
 	StatsDiskAck      //json
 	StatsDiskUsage    //path
 	StatsDiskUsageAck //json
+	StatsDiskIO       //path
+	StatsDiskIOAck    //json
 	StatsNet
 	StatsNetAck //json
-	StatsConnection
-	StatsConnectionAck //json
+	StatsNetIO
+	StatsNetIOAck //json
 	StatsUser
 	StatsUserAck //json
 )

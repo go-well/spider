@@ -33,8 +33,8 @@ func init() {
 		_ = c.Send(p)
 	})
 
-	RegisterHandler(silk.StatsCpuTimes, func(c *Client, p *silk.Package) {
-		p.Type = silk.StatsCpuTimesAck
+	RegisterHandler(silk.StatsCpuUsage, func(c *Client, p *silk.Package) {
+		p.Type = silk.StatsCpuUsageAck
 		info, err := cpu.Times(true)
 		if err != nil {
 			p.SetError(err.Error())
@@ -78,6 +78,18 @@ func init() {
 		_ = c.Send(p)
 	})
 
+	RegisterHandler(silk.StatsDiskIO, func(c *Client, p *silk.Package) {
+		p.Type = silk.StatsDiskIOAck
+		path := string(p.Data)
+		info, err := disk.IOCounters(path)
+		if err != nil {
+			p.SetError(err.Error())
+		} else {
+			p.Data, _ = json.Marshal(info)
+		}
+		_ = c.Send(p)
+	})
+
 	RegisterHandler(silk.StatsNet, func(c *Client, p *silk.Package) {
 		p.Type = silk.StatsNetAck
 		info, err := net.Interfaces()
@@ -89,10 +101,9 @@ func init() {
 		_ = c.Send(p)
 	})
 
-	RegisterHandler(silk.StatsConnection, func(c *Client, p *silk.Package) {
-		p.Type = silk.StatsConnectionAck
-		kind := string(p.Data)
-		info, err := net.Connections(kind)
+	RegisterHandler(silk.StatsNetIO, func(c *Client, p *silk.Package) {
+		p.Type = silk.StatsNetIOAck
+		info, err := net.IOCounters(true)
 		if err != nil {
 			p.SetError(err.Error())
 		} else {
