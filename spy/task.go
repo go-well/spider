@@ -3,20 +3,10 @@ package spy
 import (
 	"encoding/binary"
 	"github.com/go-well/spider/silk"
-	"io"
 	"os"
 	"os/exec"
 	"strings"
-	"sync"
 )
-
-type task struct {
-	stdin  io.WriteCloser
-	stdout io.ReadCloser
-}
-
-var tasks sync.Map
-var tasksIndex uint16 = 1
 
 func init() {
 
@@ -46,13 +36,9 @@ func init() {
 		}
 
 		//缓存
-		tasks.Store(fileIndex, &task{
-			stdin:  stdin,
-			stdout: stdout,
-		})
+		id := c.newTask(stdin, stdout)
 		buf := make([]byte, 512)
-		binary.BigEndian.PutUint16(buf, tasksIndex)
-		tasksIndex++
+		binary.BigEndian.PutUint16(buf, id)
 
 		p.Data = buf[:2]
 		_ = c.Send(p)

@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -22,9 +21,6 @@ type stat struct {
 	IsDir bool      `json:"isDir"`
 	Time  time.Time `json:"time"`
 }
-
-var files sync.Map
-var fileIndex uint16 = 1
 
 func init() {
 	RegisterHandler(silk.FsList, func(c *Client, p *silk.Package) {
@@ -105,10 +101,9 @@ func init() {
 		}
 
 		//缓存
-		files.Store(fileIndex, file)
 		p.Data = make([]byte, 512)
-		binary.BigEndian.PutUint16(p.Data, fileIndex)
-		fileIndex++
+		id := c.newFile(file)
+		binary.BigEndian.PutUint16(p.Data, id)
 
 		n, e := file.Read(p.Data[2:])
 		if e != nil {
@@ -131,7 +126,7 @@ func init() {
 	RegisterHandler(silk.FsDownloadContentAck, func(c *Client, p *silk.Package) {
 		p.Type = silk.FsDownloadContent
 		id := binary.BigEndian.Uint16(p.Data)
-		f, ok := files.Load(id)
+		f, ok := c.files.Load(id)
 		if !ok {
 			p.SetError("file not exists")
 			_ = c.Send(p)
@@ -162,10 +157,9 @@ func init() {
 		}
 
 		//缓存
-		files.Store(fileIndex, file)
+		id := c.newFile(file)
 		p.Data = make([]byte, 2)
-		binary.BigEndian.PutUint16(p.Data, fileIndex)
-		fileIndex++
+		binary.BigEndian.PutUint16(p.Data, id)
 
 		_ = c.Send(p)
 	})
@@ -174,7 +168,7 @@ func init() {
 	RegisterHandler(silk.FsUploadContent, func(c *Client, p *silk.Package) {
 		p.Type = silk.FsUploadContentAck
 		id := binary.BigEndian.Uint16(p.Data)
-		f, ok := files.Load(id)
+		f, ok := c.files.Load(id)
 		if !ok {
 			p.SetError("file not exists")
 			_ = c.Send(p)
@@ -195,7 +189,7 @@ func init() {
 	RegisterHandler(silk.FsUploadEnd, func(c *Client, p *silk.Package) {
 		p.Type = silk.FsUploadEndAck
 		id := binary.BigEndian.Uint16(p.Data)
-		f, ok := files.Load(id)
+		f, ok := c.files.Load(id)
 		if !ok {
 			p.SetError("file not exists")
 			_ = c.Send(p)

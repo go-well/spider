@@ -2,7 +2,10 @@ package spy
 
 import (
 	"github.com/go-well/spider/silk"
+	"io"
 	"net"
+	"os"
+	"sync"
 )
 
 type Handler func(c *Client, p *silk.Package)
@@ -24,11 +27,47 @@ func ReplaceHandler(tp silk.Type, handler Handler) {
 	handlers[tp] = Handlers{handler}
 }
 
+type task struct {
+	stdin  io.WriteCloser
+	stdout io.ReadCloser
+}
+
 type Client struct {
 	conn   net.Conn
 	parser silk.Parser
 	//处理队列
 	packages chan *silk.Package
+
+	//缓存文件
+	files     sync.Map
+	fileIndex uint16
+
+	tunnels     sync.Map
+	tunnelIndex uint16
+
+	tasks     sync.Map
+	taskIndex uint16
+}
+
+func (c *Client) newFile(file *os.File) uint16 {
+	c.fileIndex++
+	c.files.Store(c.fileIndex, file)
+	return c.fileIndex
+}
+
+func (c *Client) newTunnel(conn net.Conn) uint16 {
+	c.tunnelIndex++
+	c.tunnels.Store(c.tunnelIndex, conn)
+	return c.tunnelIndex
+}
+
+func (c *Client) newTask(stdin io.WriteCloser, stdout io.ReadCloser) uint16 {
+	c.taskIndex++
+	c.tasks.Store(c.taskIndex, &task{
+		stdin:  stdin,
+		stdout: stdout,
+	})
+	return c.taskIndex
 }
 
 func (c *Client) handle(p *silk.Package) {

@@ -5,11 +5,7 @@ import (
 	"github.com/go-well/spider/silk"
 	"net"
 	"strings"
-	"sync"
 )
-
-var tunnels sync.Map
-var tunnelIndex uint16 = 1
 
 //TODO 封装成Tunnel类
 func receiveTunnel(c *Client, conn net.Conn, id uint16) {
@@ -35,7 +31,7 @@ func receiveTunnel(c *Client, conn net.Conn, id uint16) {
 		Data: buf[:2],
 	})
 
-	tunnels.Delete(id)
+	c.tunnels.Delete(id)
 }
 
 func init() {
@@ -53,13 +49,11 @@ func init() {
 			return
 		}
 
-		go receiveTunnel(c, conn, tunnelIndex)
-
 		//缓存
-		tunnels.Store(tunnelIndex, conn)
 		p.Data = make([]byte, 2)
-		binary.BigEndian.PutUint16(p.Data, tunnelIndex)
-		tunnelIndex++
+		id := c.newTunnel(conn)
+		binary.BigEndian.PutUint16(p.Data, id)
+		go receiveTunnel(c, conn, id)
 
 		_ = c.Send(p)
 	})
@@ -67,7 +61,7 @@ func init() {
 	RegisterHandler(silk.TunnelClose, func(c *Client, p *silk.Package) {
 		p.Type = silk.TunnelCloseAck
 		id := binary.BigEndian.Uint16(p.Data)
-		f, ok := tunnels.LoadAndDelete(id)
+		f, ok := c.tunnels.LoadAndDelete(id)
 		if !ok {
 			p.SetError("tunnel not exists")
 			_ = c.Send(p)
@@ -86,7 +80,7 @@ func init() {
 	RegisterHandler(silk.TunnelData, func(c *Client, p *silk.Package) {
 		p.Type = silk.TunnelDataAck
 		id := binary.BigEndian.Uint16(p.Data)
-		f, ok := tunnels.Load(id)
+		f, ok := c.tunnels.Load(id)
 		if !ok {
 			p.SetError("tunnel not exists")
 			_ = c.Send(p)
@@ -103,7 +97,7 @@ func init() {
 
 	RegisterHandler(silk.TunnelEnd, func(c *Client, p *silk.Package) {
 		id := binary.BigEndian.Uint16(p.Data)
-		f, ok := tunnels.LoadAndDelete(id)
+		f, ok := c.tunnels.LoadAndDelete(id)
 		if ok {
 			conn := f.(net.Conn)
 			_ = conn.Close()
