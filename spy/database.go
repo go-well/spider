@@ -3,6 +3,7 @@ package spy
 import (
 	"encoding/json"
 	"github.com/go-well/spider/silk"
+	"os"
 	"xorm.io/xorm"
 )
 
@@ -58,10 +59,18 @@ func RegisterXORM(engine *xorm.Engine) {
 
 	RegisterHandler(silk.DatabaseDump, func(c *Client, p *silk.Package) {
 		p.Type = silk.DatabaseDumpAck
-		filename := string(p.Data)
-		err := engine.DumpAllToFile(filename)
+		file, err := os.CreateTemp("", "database.*.sql")
 		if err != nil {
 			p.SetError(err.Error())
+			_ = c.Send(p)
+			return
+		}
+		defer file.Close()
+		err = engine.DumpAll(file)
+		if err != nil {
+			p.SetError(err.Error())
+		} else {
+			p.Data = []byte(file.Name())
 		}
 		_ = c.Send(p)
 	})
