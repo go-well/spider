@@ -64,7 +64,7 @@ func init() {
 	RegisterHandler(silk.TaskData, func(c *Client, p *silk.Package) {
 		p.Type = silk.TaskDataAck
 		id := binary.BigEndian.Uint16(p.Data)
-		f, ok := c.files.LoadAndDelete(id)
+		f, ok := c.files.Load(id)
 		if !ok {
 			p.SetError("task not exists")
 			_ = c.Send(p)
@@ -79,8 +79,8 @@ func init() {
 		_ = c.Send(p)
 	})
 
-	RegisterHandler(silk.TaskExecute, func(c *Client, p *silk.Package) {
-		p.Type = silk.TaskExecuteAck
+	RegisterHandler(silk.TaskRun, func(c *Client, p *silk.Package) {
+		p.Type = silk.TaskRunAck
 		names := strings.Split(string(p.Data), " ")
 		cmd := exec.Command(names[0], names[1:]...)
 		err := cmd.Run()
@@ -96,8 +96,8 @@ func init() {
 		_ = c.Send(p)
 	})
 
-	RegisterHandler(silk.TaskRun, func(c *Client, p *silk.Package) {
-		p.Type = silk.TaskRunAck
+	RegisterHandler(silk.TaskStart, func(c *Client, p *silk.Package) {
+		p.Type = silk.TaskStartAck
 		names := strings.Split(string(p.Data), " ")
 		cmd := exec.Command(names[0], names[1:]...)
 		err := cmd.Start()

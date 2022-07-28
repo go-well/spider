@@ -34,17 +34,17 @@ const (
 )
 
 const (
-	TaskCreate     Type = iota + 40 //command
-	TaskCreateAck                   //id(uint16)
-	TaskData                        //id,data
-	TaskDataAck                     //id
-	TaskDataEnd                     //id
-	TaskKill                        //id
-	TaskKillAck                     //id
-	TaskExecute                     //commmand
-	TaskExecuteAck                  //output
-	TaskRun                         //commmand
-	TaskRunAck                      //
+	TaskCreate    Type = iota + 40 //command
+	TaskCreateAck                  //id(uint16)
+	TaskData                       //id,data
+	TaskDataAck                    //id
+	TaskDataEnd                    //id
+	TaskKill                       //id
+	TaskKillAck                    //id
+	TaskRun                        //commmand
+	TaskRunAck                     //output
+	TaskStart                      //commmand
+	TaskStartAck                   //
 
 )
 

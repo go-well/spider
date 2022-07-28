@@ -4,7 +4,7 @@ import (
 	"net"
 )
 
-func Open() error {
+func Serve() error {
 
 	listener, err := net.Listen("tcp", ":1206")
 	if err != nil {

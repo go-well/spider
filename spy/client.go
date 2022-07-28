@@ -3,9 +3,9 @@ package spy
 import (
 	"encoding/json"
 	"github.com/go-well/spider/silk"
+	"github.com/pkg/errors"
 	"github.com/super-l/machine-code/machine"
 	"io"
-	"log"
 	"net"
 	"os"
 	"os/exec"
@@ -63,6 +63,9 @@ type Client struct {
 	taskIndex uint16
 
 	heartbeatTicker *time.Timer
+
+	requests     sync.Map
+	requestIndex uint16
 }
 
 func (c *Client) newFile(file *os.File) uint16 {
@@ -87,6 +90,14 @@ func (c *Client) newTask(cmd *exec.Cmd, stdin io.WriteCloser) uint16 {
 }
 
 func (c *Client) handle(p *silk.Package) {
+	//先处理会话
+	if p.Id > 0 {
+		if ch, ok := c.requests.LoadAndDelete(p.Id); ok {
+			cc := ch.(chan *silk.Package)
+			cc <- p
+		}
+	}
+
 	if hs, ok := handlers[p.Type]; ok {
 		for _, h := range hs {
 			h(c, p)
@@ -115,10 +126,8 @@ func (c *Client) heartbeat() {
 	}
 
 	c.heartbeatTicker = time.AfterFunc(time.Second*time.Duration(c.options.Heartbeat), func() {
-
-		log.Println("heartbeat ticker active")
+		//log.Println("heartbeat ticker active")
 		_ = c.Send(&silk.Package{Type: silk.Heartbeat})
-
 		c.heartbeatTicker.Reset(time.Second * time.Duration(c.options.Heartbeat))
 	})
 }
@@ -165,6 +174,34 @@ func (c *Client) Send(p *silk.Package) error {
 	buf := p.Encode()
 	_, err := c.conn.Write(buf)
 	return err
+}
+
+func (c *Client) Ask(p *silk.Package) (*silk.Package, error) {
+	//分配ID
+	c.requestIndex++
+	if c.requestIndex == 0 {
+		c.requestIndex++
+	}
+	id := c.requestIndex
+	p.Id = id
+	err := c.Send(p)
+	if err != nil {
+		return nil, err
+	}
+
+	//等待结果和超时
+	ch := make(chan *silk.Package)
+	c.requests.Store(id, ch)
+
+	select {
+	case p := <-ch:
+		if p.Fail {
+			return nil, errors.New(string(p.Data))
+		}
+		return p, nil
+	case <-time.After(time.Minute):
+		return nil, errors.New("Timeout")
+	}
 }
 
 func (c *Client) Close() error {
