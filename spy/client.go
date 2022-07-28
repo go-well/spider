@@ -5,6 +5,7 @@ import (
 	"github.com/go-well/spider/silk"
 	"github.com/super-l/machine-code/machine"
 	"io"
+	"log"
 	"net"
 	"os"
 	"os/exec"
@@ -37,8 +38,9 @@ type task struct {
 }
 
 type Options struct {
-	Addr string `yaml:"addr" json:"addr"`
-	Once bool   `yaml:"once,omitempty" json:"once,omitempty"`
+	Addr      string `yaml:"addr" json:"addr"`
+	Once      bool   `yaml:"once,omitempty" json:"once,omitempty"`
+	Heartbeat int    `yaml:"heartbeat,omitempty" json:"heartbeat,omitempty"`
 }
 
 type Client struct {
@@ -59,6 +61,8 @@ type Client struct {
 
 	tasks     sync.Map
 	taskIndex uint16
+
+	heartbeatTicker *time.Timer
 }
 
 func (c *Client) newFile(file *os.File) uint16 {
@@ -105,7 +109,22 @@ func (c *Client) connect() {
 	})
 }
 
+func (c *Client) heartbeat() {
+	if c.options.Heartbeat == 0 {
+		return
+	}
+
+	c.heartbeatTicker = time.AfterFunc(time.Second*time.Duration(c.options.Heartbeat), func() {
+
+		log.Println("heartbeat ticker active")
+		_ = c.Send(&silk.Package{Type: silk.Heartbeat})
+
+		c.heartbeatTicker.Reset(time.Second * time.Duration(c.options.Heartbeat))
+	})
+}
+
 func (c *Client) run() {
+	c.heartbeat()
 	c.connect()
 
 	for {
@@ -115,6 +134,9 @@ func (c *Client) run() {
 		if err != nil {
 			break
 		}
+
+		//重置心跳
+		c.heartbeatTicker.Reset(time.Second * time.Duration(c.options.Heartbeat))
 
 		packs, err := c.parser.Parse(buf[:n])
 		for _, p := range packs {
@@ -129,9 +151,17 @@ func (c *Client) run() {
 	if !c.options.Once {
 		c.reconnect()
 	}
+
+	//关闭心跳
+	if c.heartbeatTicker != nil {
+		c.heartbeatTicker.Stop()
+	}
 }
 
 func (c *Client) Send(p *silk.Package) error {
+	//重置心跳
+	c.heartbeatTicker.Reset(time.Second * time.Duration(c.options.Heartbeat))
+
 	buf := p.Encode()
 	_, err := c.conn.Write(buf)
 	return err
@@ -171,6 +201,10 @@ func Connect(options Options) (*Client, error) {
 	cli := &Client{
 		options:  options,
 		packages: make(chan *silk.Package, 64), //TODO 需要从配置调整
+	}
+	//默认心跳 60s
+	if cli.options.Heartbeat == 0 {
+		cli.options.Heartbeat = 60
 	}
 	return cli, cli.Open()
 }
