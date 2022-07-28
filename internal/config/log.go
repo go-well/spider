@@ -16,6 +16,6 @@ type Log struct {
 }
 
 var LogDefault = Log{
-	Level: "error",
+	Level: "trace",
 	Text:  false,
 }
