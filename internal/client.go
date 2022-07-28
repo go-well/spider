@@ -33,6 +33,8 @@ type Client struct {
 
 	requests     sync.Map
 	requestIndex uint16
+
+	topics sync.Map
 }
 
 func (c *Client) handle(p *silk.Package) {
