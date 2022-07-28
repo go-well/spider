@@ -1,12 +1,15 @@
 package spy
 
 import (
+	"encoding/json"
 	"github.com/go-well/spider/silk"
+	"github.com/super-l/machine-code/machine"
 	"io"
 	"net"
 	"os"
 	"os/exec"
 	"sync"
+	"time"
 )
 
 type Handler func(c *Client, p *silk.Package)
@@ -33,9 +36,18 @@ type task struct {
 	stdin io.WriteCloser
 }
 
+type Options struct {
+	Net  string `yaml:"net" json:"net"`
+	Addr string `yaml:"addr" json:"addr"`
+	Once bool   `yaml:"once,omitempty" json:"once,omitempty"`
+}
+
 type Client struct {
+	options Options
+
 	conn   net.Conn
 	parser silk.Parser
+
 	//处理队列
 	packages chan *silk.Package
 
@@ -79,7 +91,24 @@ func (c *Client) handle(p *silk.Package) {
 	}
 }
 
+func (c *Client) reconnect() {
+	time.AfterFunc(time.Minute, func() {
+		_ = c.Open()
+	})
+}
+
+func (c *Client) connect() {
+	info := machine.GetMachineData()
+	data, _ := json.Marshal(info)
+	_ = c.Send(&silk.Package{
+		Type: silk.Connect,
+		Data: data,
+	})
+}
+
 func (c *Client) run() {
+	c.connect()
+
 	for {
 		var buf = make([]byte, 1024)
 
@@ -96,6 +125,11 @@ func (c *Client) run() {
 			//print
 		}
 	}
+
+	//重连
+	if !c.options.Once {
+		c.reconnect()
+	}
 }
 
 func (c *Client) Send(p *silk.Package) error {
@@ -111,24 +145,33 @@ func (c *Client) Close() error {
 }
 
 func (c *Client) Spawn() error {
+	cc := &Client{
+		options:  c.options,
+		packages: make(chan *silk.Package, 64),
+	}
+	return cc.Open()
+}
 
+func (c *Client) Open() error {
+	var err error
+	c.conn, err = net.Dial("tcp", "127.0.0.1:1206")
+	if err != nil {
+		//初次未连接成功，也要重连
+		if !c.options.Once {
+			c.reconnect()
+		}
+
+		return err
+	}
+
+	go c.run()
 	return nil
 }
 
-func newClient(conn net.Conn) *Client {
+func Connect(options Options) (*Client, error) {
 	cli := &Client{
-		conn:     conn,
+		options:  options,
 		packages: make(chan *silk.Package, 64), //TODO 需要从配置调整
 	}
-	go cli.run()
-	return cli
-}
-
-func Open() (*Client, error) {
-	conn, err := net.Dial("tcp", "127.0.0.1:1206")
-	if err != nil {
-		return nil, err
-	}
-
-	return newClient(conn), nil
+	return cli, cli.Open()
 }
