@@ -10,10 +10,10 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/kardianos/service v1.2.1
 	github.com/lib/pq v1.10.3
+	github.com/pkg/errors v0.9.1
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/sirupsen/logrus v1.9.0
 	github.com/super-l/machine-code v0.0.0-20210720085303-62525d58dab0
-	go.bug.st/serial v1.3.5
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/yaml.v3 v3.0.1
 	xorm.io/xorm v1.3.1
@@ -21,7 +21,6 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.2.0 // indirect
-	github.com/creack/goselect v0.1.2 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect

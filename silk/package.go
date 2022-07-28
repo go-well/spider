@@ -37,7 +37,7 @@ func (p *Package) Encode() []byte {
 	buf := make([]byte, 12+len(p.Data))
 	copy(buf, MAGIC)
 	binary.BigEndian.PutUint16(buf[6:], p.Id)
-	buf[8] = p.Type
+	buf[8] = byte(p.Type)
 	if p.Fail {
 		buf[8] &= 0x80
 	}
@@ -66,7 +66,7 @@ func (p *Package) Decode(buf []byte) (uint64, error) {
 
 	//解析
 	p.Id = binary.BigEndian.Uint16(buf[6:])
-	p.Type = buf[8]
+	p.Type = Type(buf[8])
 	//p.Data = lib.Dup(buf[12:size])
 	p.Data = buf[9+n : size]
 

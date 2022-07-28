@@ -37,7 +37,6 @@ type task struct {
 }
 
 type Options struct {
-	Net  string `yaml:"net" json:"net"`
 	Addr string `yaml:"addr" json:"addr"`
 	Once bool   `yaml:"once,omitempty" json:"once,omitempty"`
 }
@@ -154,7 +153,7 @@ func (c *Client) Spawn() error {
 
 func (c *Client) Open() error {
 	var err error
-	c.conn, err = net.Dial("tcp", "127.0.0.1:1206")
+	c.conn, err = net.Dial("tcp", c.options.Addr)
 	if err != nil {
 		//初次未连接成功，也要重连
 		if !c.options.Once {
