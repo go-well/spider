@@ -9,7 +9,7 @@ import (
 func main() {
 
 	cli, err := spy.Connect(spy.Options{
-		Addr: "127.0.0.1:8888",
+		Addr: "127.0.0.1:1206",
 	})
 	if err != nil {
 		log.Fatal(err)

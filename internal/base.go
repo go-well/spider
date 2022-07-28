@@ -1,6 +1,10 @@
 package internal
 
-import "github.com/go-well/spider/silk"
+import (
+	"encoding/json"
+	"github.com/go-well/spider/silk"
+	"github.com/super-l/machine-code/machine"
+)
 
 func (c *Client) Publish(topic string, payload []byte) error {
 	ll := len(topic)
@@ -20,6 +24,21 @@ func init() {
 
 	RegisterHandler(silk.Ping, func(c *Client, p *silk.Package) {
 		p.Type = silk.Pong
+		_ = c.Send(p)
+	})
+
+	RegisterHandler(silk.Connect, func(c *Client, p *silk.Package) {
+		p.Type = silk.ConnectAck
+
+		var info machine.MachineData
+		err := json.Unmarshal(p.Data, &info)
+		if err != nil {
+			p.SetError(err.Error())
+		}
+		//TODO 查询数据库，找到设备
+		//info.
+
+		p.Data = nil
 		_ = c.Send(p)
 	})
 

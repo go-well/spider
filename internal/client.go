@@ -13,6 +13,9 @@ type Handlers []Handler
 
 var handlers = map[silk.Type]Handlers{}
 
+//
+var clients sync.Map
+
 func RegisterHandler(tp silk.Type, handler Handler) {
 	hs, ok := handlers[tp]
 	if !ok {

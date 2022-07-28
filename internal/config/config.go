@@ -17,6 +17,7 @@ var existing = false
 type Configure struct {
 	Node            string   `yaml:"node" json:"node"`
 	Data            string   `yaml:"data" json:"data"`
+	Addr            string   `yaml:"addr" json:"addr"`
 	DefaultPassword string   `yaml:"default_password" json:"default_password"`
 	Web             Web      `yaml:"web" json:"web"`
 	Database        Database `yaml:"database" json:"database"`
@@ -28,6 +29,7 @@ type Configure struct {
 var Config = Configure{
 	Node:            "root",
 	Data:            "data",
+	Addr:            ":1206",
 	DefaultPassword: "123456",
 	Web:             WebDefault,
 	Database:        DatabaseDefault,
