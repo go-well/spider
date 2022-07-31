@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/go-well/spider/silk"
 	"github.com/pkg/errors"
-	"github.com/super-l/machine-code/machine"
 	"io"
 	"net"
 	"os"
@@ -112,8 +111,7 @@ func (c *Client) reconnect() {
 }
 
 func (c *Client) connect() {
-	info := machine.GetMachineData()
-	data, _ := json.Marshal(info)
+	data, _ := json.Marshal(&RegisterPackage)
 	_ = c.Send(&silk.Package{
 		Type: silk.Connect,
 		Data: data,
