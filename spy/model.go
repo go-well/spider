@@ -5,7 +5,7 @@ import (
 	"runtime"
 )
 
-type Register struct {
+type registerPack struct {
 	App     string `json:"app,omitempty"`
 	Version string `json:"version,omitempty"`
 	CPUID   string `json:"CPUID,omitempty"`
@@ -14,11 +14,16 @@ type Register struct {
 	GO      string `json:"GO,omitempty"`
 }
 
-var RegisterPackage *Register
+var regPack registerPack
 
 func init() {
-	RegisterPackage.CPUID, _ = machine.GetCpuId()
-	RegisterPackage.UUID, _ = machine.GetPlatformUUID()
-	RegisterPackage.SN, _ = machine.GetSerialNumber()
-	RegisterPackage.GO = runtime.Version()
+	regPack.CPUID, _ = machine.GetCpuId()
+	regPack.UUID, _ = machine.GetPlatformUUID()
+	regPack.SN, _ = machine.GetSerialNumber()
+	regPack.GO = runtime.Version()
+}
+
+func Register(app, version string) {
+	regPack.App = app
+	regPack.Version = version
 }

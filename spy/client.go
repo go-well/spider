@@ -111,7 +111,7 @@ func (c *Client) reconnect() {
 }
 
 func (c *Client) connect() {
-	data, _ := json.Marshal(&RegisterPackage)
+	data, _ := json.Marshal(&regPack)
 	_ = c.Send(&silk.Package{
 		Type: silk.Connect,
 		Data: data,
